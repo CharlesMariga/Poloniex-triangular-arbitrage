@@ -1,3 +1,4 @@
+from tokenize import Double
 import requests
 import json
 
@@ -87,6 +88,97 @@ def structure_triangular_pairs(coin_list):
                                     triangular_pairs_list.append(match_dict)
                                     remove_duplicates_list.append(unique_item)
 
-    print(len(triangular_pairs_list))
-    for item in triangular_pairs_list[:20]:
-        print(item)
+    return triangular_pairs_list
+
+
+# Structure prices
+def get_price_for_t_pair(t_pair, prices_json):
+    # Extract pair info
+    pair_a = t_pair["pair_a"]
+    pair_b = t_pair["pair_b"]
+    pair_c = t_pair["pair_c"]
+
+    # Extract price information for give pairs
+    pair_a_ask = float(prices_json[pair_a]["lowestAsk"])
+    pair_a_bid = float(prices_json[pair_a]["highestBid"])
+    pair_b_ask = float(prices_json[pair_b]["lowestAsk"])
+    pair_b_bid = float(prices_json[pair_b]["highestBid"])
+    pair_c_bid = float(prices_json[pair_c]["highestBid"])
+    pair_c_ask = float(prices_json[pair_c]["lowestAsk"])
+
+    # Output dictionary
+    return {
+        "pair_a_ask": pair_a_ask,
+        "pair_a_bid": pair_a_bid,
+        "pair_b_ask": pair_b_ask,
+        "pair_b_bid": pair_b_bid,
+        "pair_c_ask": pair_c_ask,
+        "pair_c_bid": pair_c_bid
+    }
+
+
+# Calculate surface rate arbitrage opportunity
+def calc_triangular_arb_surface_rate(t_pair, prices_dict):
+    starting_amount = 1
+    min_surface_rate = 0
+    surface_dict = {}
+    contract_2 = ""
+    contract_3 = ""
+    direction_trade_1 = ""
+    direction_trade_2 = ""
+    direction_trade_3 = ""
+    acquired_coin_t2 = 0
+    acquired_coin_t3 = 0
+    calculated = 0
+
+    # Extract pair variables
+    a_base = t_pair["a_base"]
+    a_quote = t_pair["a_quote"]
+    b_base = t_pair["b_base"]
+    b_quote = t_pair["b_quote"]
+    c_base = t_pair["c_base"]
+    c_quote = t_pair["c_quote"]
+    pair_a = t_pair["pair_a"]
+    pair_b = t_pair["pair_b"]
+    pair_c = t_pair["pair_c"]
+
+    # Extract price information
+    a_ask = prices_dict["pair_a_ask"]
+    a_bid = prices_dict["pair_a_bid"]
+    b_ask = prices_dict["pair_b_ask"]
+    b_bid = prices_dict["pair_b_bid"]
+    c_ask = prices_dict["pair_c_ask"]
+    c_bid = prices_dict["pair_c_bid"]
+
+    # Set directions and loop through
+    direction_list = ["forward", "reverse"]
+    for direction in direction_list:
+        # Set additional variables for swap information
+        swap_1 = 0
+        swap_2 = 0
+        swap_3 = 0
+        swap_1_rate = 0
+        swap_2_rate = 0
+        swap_3_rate = 0
+
+        """
+            Polonied Exchange!
+            If we are swapping the coin on the left (Base) with the coin on the right (Quote) then we divide by the ask (or mulitply by 1 / ask)
+            If we are swapping the coin on the right (Quote) wih tehe coin on the left (Base) then we multiply by the bid
+        """
+        # Assume we are starting with a_base and swapping for a_quote
+        if direction == "forward":
+            swap_1 = a_base
+            swap_2 = a_quote
+            swap_1_rate = 1 / a_ask
+            direction_trade_1 = "base_to_quote"
+
+        if direction == "reverse":
+            swap_1 = a_quote
+            swap_2 = a_base
+            swap_1_rate = a_bid
+            direction_trade_1 = "quote_to_base"
+
+        # Place first trade
+        acquired_coin_t1 = swap_1_rate * starting_amount
+        print(pair_a, starting_amount, acquired_coin_t1)
