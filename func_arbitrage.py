@@ -119,16 +119,26 @@ def get_price_for_t_pair(t_pair, prices_json):
 
 # Calculate surface rate arbitrage opportunity
 def calc_triangular_arb_surface_rate(t_pair, prices_dict):
+    # Amount of the starting coin (Coin you have at hand)
     starting_amount = 1
     min_surface_rate = 0
     surface_dict = {}
+
+    # Which pair is being transacted
+    # (pair_a, pair_b, pair_c)
     contract_2 = ""
     contract_3 = ""
+
+    # Direction of trade (base_to_quote) or (quote_to_base)
     direction_trade_1 = ""
     direction_trade_2 = ""
     direction_trade_3 = ""
+
+    # Acquired coin after each transaction
     acquired_coin_t2 = 0
     acquired_coin_t3 = 0
+
+    # Whether the calculation is over or not
     calculated = 0
 
     # Extract pair variables
@@ -157,9 +167,9 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
         swap_1 = 0
         swap_2 = 0
         swap_3 = 0
-        swap_1_rate = 0
-        swap_2_rate = 0
-        swap_3_rate = 0
+        swap_1_rate = 0  # Rate of exchange for transaction 1 (t1)
+        swap_2_rate = 0  # Rate of exchange for transaction 2 (t2)
+        swap_3_rate = 0  # Rate of exchange for transaction 3 (t3)
 
         """
             Polonied Exchange!
@@ -173,6 +183,7 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
             swap_1_rate = 1 / a_ask
             direction_trade_1 = "base_to_quote"
 
+        # Assumte we are stargin with a_quote and swapping for a_base
         if direction == "reverse":
             swap_1 = a_quote
             swap_2 = a_base
@@ -180,5 +191,112 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
             direction_trade_1 = "quote_to_base"
 
         # Place first trade
+        contract_1 = pair_a
         acquired_coin_t1 = swap_1_rate * starting_amount
-        print(pair_a, starting_amount, acquired_coin_t1)
+
+        """ FORWARD """
+        if direction == "forward":
+            """ SCENARIO 1: a_quote matching b_quote """
+            # Check if a_quote matches b_quote
+            if a_quote == b_quote and calculated == 0:
+                swap_2_rate = b_bid
+                acquired_coin_t2 = acquired_coin_t1 * swap_2_rate
+                direction_trade_2 = "quote_to_base"
+                contract_2 = pair_b
+
+                # Check if b_base (acquired coin) matches c_base
+                if b_base == c_base:
+                    swap_3 = c_base
+                    swap_3_rate = 1 / c_ask
+                    direction_trade_3 = "base_to_quote"
+                    contract_3 = pair_c
+
+                # Check if b_base (acquired coin) matches c_quote
+                if b_base == c_quote:
+                    swap_3 = c_quote
+                    swap_3_rate = c_bid
+                    direction_trade_3 = "quote_to_base"
+                    contract_3 = pair_c
+
+                acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
+                calculated = 1
+
+            """ SCENARIO 2: a_quote matching b_base """
+            # Check if a_quote is equal to b_base
+            if a_quote == b_base and calculated == 0:
+                swap_2_rate = 1 / b_ask
+                acquired_coin_t2 = acquired_coin_t1 * swap_2_rate
+                direction_trade_2 = "base_to_quote"
+                contract_2 = pair_b
+
+                # Check if b_quote (acquired coin) matches c_base
+                if b_quote == c_base:
+                    swap_3 = c_base
+                    swap_3_rate = 1 / c_ask
+                    direction_trade_3 = "base_to_quote"
+                    contract_3 = pair_c
+
+                # Check if b_quote (acquired coin) matches c_quote
+                if b_quote == c_quote:
+                    swap_3 = c_quote
+                    swap_3_rate = c_bid
+                    direction_trade_3 = "quote_to_base"
+                    contract_3 = pair_c
+
+                acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
+                calculated = 1
+
+            """ SCENARIO 3: a_quote matching c_quote """
+            # Check if a_quote matches c_quote
+            if a_quote == c_quote and calculated == 0:
+                swap_2_rate = c_bid
+                acquired_coin_t2 = acquired_coin_t1 * swap_2_rate
+                direction_trade_2 = "quote_to_base"
+                contract_2 = pair_c
+
+                # Check if c_base (acquired coin) matches b_base
+                if c_base == b_base:
+                    swap_3 = b_base
+                    swap_3_rate = 1 / b_ask
+                    direction_trade_3 = "base_to_quote"
+                    contract_3 = pair_b
+
+                # Check if c_base (acquired coin) matches b_quote
+                if c_base == b_quote:
+                    swap_3 = b_quote
+                    swap_3_rate = b_bid
+                    direction_trade_3 = "quote_to_base"
+                    contract_3 = pair_b
+
+                acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
+                calculated = 1
+
+            """ SCENARIO 4: a_quote matching c_base """
+            # Check if a_quote is equal to c_base
+            if a_quote == c_base and calculated == 0:
+
+                swap_2_rate = 1 / c_ask
+                acquired_coin_t2 = acquired_coin_t1 * swap_2_rate
+                direction_trade_2 = "base_to_quote"
+                contract_2 = pair_c
+
+                # Check if c_quote (acquired coin) matches b_base
+                if c_quote == b_base:
+                    swap_3 = b_base
+                    swap_3_rate = 1 / b_ask
+                    direction_trade_3 = "base_to_quote"
+                    contract_3 = pair_b
+
+                # Check if c_quote (acquired coin) matches b_quote
+                if c_quote == b_quote:
+                    swap_3 = b_quote
+                    swap_3_rate = b_bid
+                    direction_trade_3 = "quote_to_base"
+                    contract_3 = pair_b
+
+                acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
+                calculated = 1
+
+            # if acquired_coin_t3 > starting_amount:
+            #     print(direction, pair_a, pair_b, pair_c,
+            #           starting_amount, acquired_coin_t3)
