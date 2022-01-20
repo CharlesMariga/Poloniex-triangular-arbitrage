@@ -2,6 +2,7 @@
 from random import triangular
 import func_arbitrage
 import json
+import time
 
 # Global variables
 coin_price_url = "https://poloniex.com/public?command=returnTicker"
@@ -54,9 +55,13 @@ def step_2():
 
     # Loop through and structure price information
     for t_pair in structured_pairs:
-        prices_dict = func_arbitrage.get_price_for_t_pair(t_pair, prices_json)
+        prices_dict = func_arbitrage.get_price_for_t_pair(
+            t_pair, prices_json)
         surface_arb = func_arbitrage.calc_triangular_arb_surface_rate(
             t_pair, prices_dict)
+
+        if len(surface_arb) > 0:
+            print(surface_arb)
 
 
 """ MAIN """

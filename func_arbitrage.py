@@ -412,9 +412,31 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
         trade_description_2 = f"Swap {acquired_coin_t1} of {swap_2} at {swap_2_rate} for {swap_3} acquiring {acquired_coin_t2}"
         trade_description_3 = f"Swap {acquired_coin_t2} of {swap_3} at {swap_3_rate} for {swap_1} acquiring {acquired_coin_t3}"
 
-        if profit_loss > 0:
-            print("Direction: ", direction)
-            print(trade_description_1)
-            print(trade_description_2)
-            print(trade_description_3)
-            print("-----------------------------------------------------")
+        # Output Results
+        if profit_loss_perc > min_surface_rate:
+            surface_dict = {
+                "swap_1": swap_1,
+                "swap_2": swap_2,
+                "swap_3": swap_3,
+                "contract_1": contract_1,
+                "contract_2": contract_2,
+                "contract_3": contract_3,
+                "direction_trade_1": direction_trade_1,
+                "direction_trade_2": direction_trade_2,
+                "direction_trade_3": direction_trade_3,
+                "starting_amount": starting_amount,
+                "acquired_coin_t1": acquired_coin_t1,
+                "acquired_coin_t2": acquired_coin_t2,
+                "acquired_coin_t3": acquired_coin_t3,
+                "swap_1_rate": swap_1_rate,
+                "swap_2_rate": swap_2_rate,
+                "swap_3_rate": swap_3_rate,
+                "profit_loss": profit_loss,
+                "profit_loss_perc": profit_loss_perc,
+                "direction": direction,
+                "trade_description_1": trade_description_1,
+                "trace_description_2": trade_description_2,
+                "trade_description_3": trade_description_3
+            }
+            return surface_dict
+    return surface_dict
