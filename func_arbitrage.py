@@ -435,8 +435,13 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
                 "profit_loss_perc": profit_loss_perc,
                 "direction": direction,
                 "trade_description_1": trade_description_1,
-                "trace_description_2": trade_description_2,
+                "trade_description_2": trade_description_2,
                 "trade_description_3": trade_description_3
             }
             return surface_dict
     return surface_dict
+
+
+# Get the depth from the orderbook
+def get_depth_from_order_book():
+    print("Hello")

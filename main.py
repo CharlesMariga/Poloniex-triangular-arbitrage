@@ -61,11 +61,16 @@ def step_2():
             t_pair, prices_dict)
 
         if len(surface_arb) > 0:
-            print(surface_arb)
+            print(surface_arb["trade_description_1"])
+            print(surface_arb["trade_description_2"])
+            print(surface_arb["trade_description_3"])
+            print("Profit percentage: ", surface_arb["profit_loss_perc"])
+            print("--------------------------------------------------")
 
 
 """ MAIN """
 if __name__ == "__main__":
     # coin_list = step_0()
     # structured_pairs = step_1(coin_list)
-    step_2()
+    # step_2()
+    func_arbitrage.get_depth_from_order_book()
