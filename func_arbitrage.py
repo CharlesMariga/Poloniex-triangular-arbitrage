@@ -444,4 +444,27 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
 
 # Get the depth from the orderbook
 def get_depth_from_order_book():
-    print("Hello")
+    """
+        Challanges:
+        - Full amount of available amount in can be eaten on the first level(level 0)
+        - Some of the amount in can be eaten up by multiple levels
+        - Some coins may not have enough liquidity
+    """
+
+    # Extract initial variables
+    swap_1 = 'USDT'
+    starting_amount = 100
+    starting_amount_dict = {"USDT": 100, "USDC": 100,  "BTC": 0.05, "ETH": 0.1}
+
+    if swap_1 in starting_amount_dict:
+        starting_amount = starting_amount_dict[swap_1]
+
+    # Define pairs
+    contract_1 = "USDT_BTC"
+    contract_2 = "BTC_INJ"
+    contract_3 = "USDT_INJ"
+
+    # Define direction for trades
+    contract_1_direction = "base_to_quote"
+    contract_2_direction = "base_to_quote"
+    contract_3_direction = "quote_to_base"
