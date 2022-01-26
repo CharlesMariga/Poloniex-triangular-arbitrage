@@ -2,6 +2,7 @@
 from random import triangular
 import func_arbitrage
 import json
+import time
 
 # Global variables
 coin_price_url = "https://poloniex.com/public?command=returnTicker"
@@ -60,17 +61,22 @@ def step_2():
             t_pair, prices_dict)
 
         if len(surface_arb) > 0:
-            print(surface_arb["trade_description_1"])
-            print(surface_arb["trade_description_2"])
-            print(surface_arb["trade_description_3"])
-            print("Profit percentage: ", surface_arb["profit_loss_perc"])
-            print("--------------------------------------------------")
+            # print(surface_arb)
+            real_rate_arb = func_arbitrage.get_depth_from_order_book(
+                surface_arb)
+            if "profit_loss" in real_rate_arb:
+                print("Starting amount: ", real_rate_arb["starting_amount"])
+                print("Final amount: ", real_rate_arb["acquired_coin_t3"])
+                print("Profit/loss: ", real_rate_arb["profit_loss"])
+                print("% profit/loss: ", real_rate_arb["real_rate_perc"])
+                print("-----------------------------------")
+                time.sleep(20)
 
 
 """ MAIN """
 if __name__ == "__main__":
     # coin_list = step_0()
     # structured_pairs = step_1(coin_list)
-    # step_2()
-    real_rate_arb = func_arbitrage.get_depth_from_order_book()
-    print(real_rate_arb)
+
+    while True:
+        step_2()
