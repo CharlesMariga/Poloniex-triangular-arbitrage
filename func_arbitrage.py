@@ -442,45 +442,27 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
     return surface_dict
 
 
-# Reformat orderbook for depth calculation
-def reformat_orderbook(prices, c_direction):
-    price_list_main = []
-
-    if c_direction == "base_to_quote":
-        for price in prices["asks"]:
-            ask_price = float(price[0])
-            adjusted_price = 1 / ask_price if ask_price != 0 else 0
-            adjusted_quantity = float(price[1] * ask_price)
-            price_list_main.append([adjusted_price, adjusted_quantity])
-    elif c_direction == "quote_to_base":
-        for price in prices["bids"]:
-            bid_price = float(price[0])
-            adjusted_price = bid_price if bid_price != 0 else 0
-            adjusted_quantity = float(price[1])
-            price_list_main.append([adjusted_price, adjusted_quantity])
-
-    return price_list_main
-
-
 # Get the depth from the orderbook
 def get_depth_from_order_book():
     """
-        Challanges:
-        - Full amount of available amount in can be eaten on the first level(level 0)
-        - Some of the amount in can be eaten up by multiple levels
-        - Some coins may not have enough liquidity
+        CHALLENGE
+        Full amount of starting amount can be eaten on the first level (level 0)
+        Some of the starting amount can be eaten up by multiple levels
+        Some coins may not have enough liquidity
     """
 
     # Extract initial variables
     swap_1 = 'USDT'
     starting_amount = 100
-    starting_amount_dict = {"USDT": 100, "USDC": 100,  "BTC": 0.05, "ETH": 0.1}
+    starting_amount_dict = {"USDT": 100, "USDC": 100, "BTC": 0.05, "ETH": 0.1}
 
     if swap_1 in starting_amount_dict:
         starting_amount = starting_amount_dict[swap_1]
 
+        print(starting_amount)
+
     # Define pairs
-    contract_1 = "USDT_BTC"
+    contract_1 = 'USDT_BTC'
     contract_2 = "BTC_INJ"
     contract_3 = "USDT_INJ"
 
@@ -488,10 +470,3 @@ def get_depth_from_order_book():
     contract_1_direction = "base_to_quote"
     contract_2_direction = "base_to_quote"
     contract_3_direction = "quote_to_base"
-
-    # Get orderbook for first trade assesment
-    url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
-    depth_1_prices = get_coin_tickers(url1)
-
-    depth_1_reformatted_prices = reformat_orderbook(
-        depth_1_prices, contract_1_direction)
