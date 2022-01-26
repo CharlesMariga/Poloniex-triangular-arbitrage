@@ -1,6 +1,7 @@
 from tokenize import Double
 import requests
 import json
+import time
 
 
 # Make a get request
@@ -462,19 +463,59 @@ def reformat_orderbook(prices, c_direction):
     return price_list_main
 
 
-# Get the depth from the orderbook
-def get_depth_from_order_book():
-    """
+# Get acquired coin for depth calculation (aka Depth calculation)
+"""
         CHALLENGE
         Full amount of starting amount can be eaten on the first level (level 0)
         Some of the starting amount can be eaten up by multiple levels
         Some coins may not have enough liquidity
     """
 
+
+def calculate_acquired_coin(amount_in, order_book):
+    # Initialize variables
+    trading_balance = amount_in
+    quantity_bought = 0
+    acquired_coin = 0
+    counts = 0
+    for level in order_book:
+        # Extract the level price and quantity
+        level_price = level[0]
+        level_available_quantity = level[1]
+
+        # Full amount of starting amount can be eaten on the first level (level 0)
+        # Amount in is <= first_level_total_amount
+        if trading_balance <= level_available_quantity:
+            quantity_bought = trading_balance
+            trading_balance = 0
+            amount_bought = quantity_bought * level_price
+        elif trading_balance > level_available_quantity:
+            quantity_bought = level_available_quantity
+            trading_balance -= quantity_bought
+            amount_bought = quantity_bought * level_price
+
+        # Accumulate acquired coin
+        acquired_coin += amount_bought
+
+        # Exit trade if there is no trading_balance left
+        if trading_balance == 0:
+            return acquired_coin
+
+        # Exit if not enough order book levels
+        counts += 1
+        if counts > len(order_book):
+            return 0
+
+# Get the depth from the orderbook
+
+
+def get_depth_from_order_book():
+
     # Extract initial variables
     swap_1 = 'USDT'
     starting_amount = 100
-    starting_amount_dict = {"USDT": 100, "USDC": 100, "BTC": 0.05, "ETH": 0.1}
+    starting_amount_dict = {"USDT": 100,
+                            "USDC": 100, "BTC": 0.05, "ETH": 0.1}
 
     if swap_1 in starting_amount_dict:
         starting_amount = starting_amount_dict[swap_1]
@@ -491,7 +532,45 @@ def get_depth_from_order_book():
 
     # Get orderbook for first trade assesment
     url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
-    dept_1_prices = get_coin_tickers(url1)
-
+    depth_1_prices = get_coin_tickers(url1)
     dept_1_reformatted_prices = reformat_orderbook(
-        dept_1_prices, contract_1_direction)
+        depth_1_prices, contract_1_direction)
+    time.sleep(0.3)
+
+    url2 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_2}&depth=20"
+    depth_2_prices = get_coin_tickers(url2)
+    dept_2_reformatted_prices = reformat_orderbook(
+        depth_2_prices, contract_2_direction)
+    time.sleep(0.3)
+
+    url3 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_3}&depth=20"
+    depth_3_prices = get_coin_tickers(url3)
+    dept_3_reformatted_prices = reformat_orderbook(
+        depth_3_prices, contract_3_direction)
+
+    # Get acquired coin for trade1
+    acquired_coin_t1 = calculate_acquired_coin(
+        starting_amount, dept_1_reformatted_prices)
+    acquired_coin_t2 = calculate_acquired_coin(
+        acquired_coin_t1, dept_2_reformatted_prices)
+    acquired_coin_t3 = calculate_acquired_coin(
+        acquired_coin_t2, dept_3_reformatted_prices)
+
+    # Calculate profit loss (Also known as real rate)
+    profit_loss = acquired_coin_t3 - starting_amount
+    real_rate_perc = (profit_loss / starting_amount) * \
+        100 if profit_loss != 0 else 0
+
+    if real_rate_perc > -1:
+        return {
+            "profit_loss": profit_loss,
+            "real_rate_perc": real_rate_perc,
+            "contract_1": contract_1,
+            "contract_2": contract_2,
+            "contract_3": contract_3,
+            "contract_1_direction": contract_1_direction,
+            "contract_2_direction": contract_2_direction,
+            "contract_3_direction": contract_3_direction,
+        }
+    else:
+        return {}

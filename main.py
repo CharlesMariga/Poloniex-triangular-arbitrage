@@ -2,7 +2,6 @@
 from random import triangular
 import func_arbitrage
 import json
-import time
 
 # Global variables
 coin_price_url = "https://poloniex.com/public?command=returnTicker"
@@ -73,4 +72,5 @@ if __name__ == "__main__":
     # coin_list = step_0()
     # structured_pairs = step_1(coin_list)
     # step_2()
-    func_arbitrage.get_depth_from_order_book()
+    real_rate_arb = func_arbitrage.get_depth_from_order_book()
+    print(real_rate_arb)
