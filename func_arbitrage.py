@@ -442,6 +442,26 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
     return surface_dict
 
 
+# Reformat orderbook for depth calculation
+def reformat_orderbook(prices, c_direction):
+    price_list_main = []
+
+    if c_direction == "base_to_quote":
+        for price in prices["asks"]:
+            ask_price = float(price[0])
+            adjusted_price = 1 / ask_price if ask_price != 0 else 0
+            adjusted_quantity = float(price[1]) * ask_price
+            price_list_main.append([adjusted_price, adjusted_quantity])
+    elif c_direction == "quote_to_base":
+        for price in prices["bids"]:
+            bid_price = float(price[0])
+            adjusted_price = bid_price if bid_price != 0 else 0
+            adjusted_quantity = float(price[1])
+            price_list_main.append([adjusted_price, adjusted_quantity])
+
+    return price_list_main
+
+
 # Get the depth from the orderbook
 def get_depth_from_order_book():
     """
@@ -459,8 +479,6 @@ def get_depth_from_order_book():
     if swap_1 in starting_amount_dict:
         starting_amount = starting_amount_dict[swap_1]
 
-        print(starting_amount)
-
     # Define pairs
     contract_1 = 'USDT_BTC'
     contract_2 = "BTC_INJ"
@@ -474,3 +492,6 @@ def get_depth_from_order_book():
     # Get orderbook for first trade assesment
     url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
     dept_1_prices = get_coin_tickers(url1)
+
+    dept_1_reformatted_prices = reformat_orderbook(
+        dept_1_prices, contract_1_direction)
