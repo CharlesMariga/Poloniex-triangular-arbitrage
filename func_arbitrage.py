@@ -1,4 +1,3 @@
-from tokenize import Double
 import requests
 import json
 import time
@@ -69,7 +68,8 @@ def structure_triangular_pairs(coin_list):
                                     count_c_quote += 1
 
                             # Determining triangular match
-                            if count_c_base == 2 and count_c_quote == 2 and c_base != c_quote:
+                            if (count_c_base == 2 and count_c_quote == 2
+                                    and c_base != c_quote):
                                 combined = pair_a + "," + pair_b + "," + pair_c
                                 unique_item = "".join(sorted(combine_all))
 
@@ -176,8 +176,11 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
 
         """
             Polonied Exchange!
-            If we are swapping the coin on the left (Base) with the coin on the right (Quote) then we divide by the ask (or mulitply by 1 / ask)
-            If we are swapping the coin on the right (Quote) wih tehe coin on the left (Base) then we multiply by the bid
+            If we are swapping the coin on the left (Base) with the coin on
+            the right (Quote) then we divide by the ask (or mulitply by 1 / 
+            ask)
+            If we are swapping the coin on the right (Quote) wih tehe coin on
+            the left (Base) then we multiply by the bid
         """
         # Assume we are starting with a_base and swapping for a_quote
         if direction == "forward":
@@ -409,9 +412,12 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
             100 if profit_loss != 0 else 0
 
         # Trade Descriptions
-        trade_description_1 = f"Start with {swap_1} of {starting_amount}. Swap at {swap_1_rate} for {swap_2} acquiring {acquired_coin_t1}"
-        trade_description_2 = f"Swap {acquired_coin_t1} of {swap_2} at {swap_2_rate} for {swap_3} acquiring {acquired_coin_t2}"
-        trade_description_3 = f"Swap {acquired_coin_t2} of {swap_3} at {swap_3_rate} for {swap_1} acquiring {acquired_coin_t3}"
+        trade_description_1 = f"""Start with {swap_1} of {starting_amount}.
+            Swap at {swap_1_rate} for {swap_2} acquiring {acquired_coin_t1}"""
+        trade_description_2 = f"""Swap {acquired_coin_t1} of {swap_2} at 
+            {swap_2_rate} for {swap_3} acquiring {acquired_coin_t2}"""
+        trade_description_3 = f"""Swap {acquired_coin_t2} of {swap_3} at 
+            {swap_3_rate} for {swap_1} acquiring {acquired_coin_t3}"""
 
         # Output Results
         if profit_loss_perc > min_surface_rate:
@@ -466,7 +472,8 @@ def reformat_orderbook(prices, c_direction):
 # Get acquired coin for depth calculation (aka Depth calculation)
 """
         CHALLENGE
-        Full amount of starting amount can be eaten on the first level (level 0)
+        Full amount of starting amount can be eaten on the first level
+        (level 0)
         Some of the starting amount can be eaten up by multiple levels
         Some coins may not have enough liquidity
     """
@@ -484,7 +491,8 @@ def calculate_acquired_coin(amount_in, order_book):
         level_price = level[0]
         level_available_quantity = level[1]
 
-        # Full amount of starting amount can be eaten on the first level (level 0)
+        # Full amount of starting amount can be eaten on the first level 
+        # (level 0)
         # Amount in is <= first_level_total_amount
         if trading_balance <= level_available_quantity:
             quantity_bought = trading_balance
@@ -530,7 +538,8 @@ def get_depth_from_order_book(surface_arb):
     contract_3_direction = surface_arb["direction_trade_3"]
 
     # Get orderbook for first trade assesment
-    url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
+    url1 = f"""https://poloniex.com/public?command=returnOrderBook
+        &currencyPair={contract_1}&depth=20"""
     depth_1_prices = get_coin_tickers(url1)
     if len(depth_1_prices["asks"]) == 0 or len(depth_1_prices["bids"]) == 0:
         return {}
@@ -538,7 +547,8 @@ def get_depth_from_order_book(surface_arb):
         depth_1_prices, contract_1_direction)
     time.sleep(0.3)
 
-    url2 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_2}&depth=20"
+    url2 = f"""https://poloniex.com/public?command=returnOrderBook&
+        currencyPair={contract_2}&depth=20"""
     depth_2_prices = get_coin_tickers(url2)
     if len(depth_2_prices["asks"]) == 0 or len(depth_2_prices["bids"]) == 0:
         return {}
@@ -546,7 +556,8 @@ def get_depth_from_order_book(surface_arb):
         depth_2_prices, contract_2_direction)
     time.sleep(0.3)
 
-    url3 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_3}&depth=20"
+    url3 = f"""https://poloniex.com/public?command=returnOrderBook&
+        currencyPair={contract_3}&depth=20"""
     depth_3_prices = get_coin_tickers(url3)
     if len(depth_3_prices["asks"]) == 0 or len(depth_3_prices["bids"]) == 0:
         return {}
